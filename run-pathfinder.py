@@ -10,6 +10,7 @@ import ipdb
 from shapely.geometry import Point, LineString
 from skimage.io import imsave
 from simplekml import Kml
+from osgeo import gdal, osr
 
 kml = Kml()
 
@@ -56,6 +57,13 @@ targets = np.asarray(targets)
 pp.pprint(targets)
 pp.pprint(origins)
 
+crs = osr.SpatialReference()
+crs.ImportFromWkt(ds.GetProjectionRef())
+# create lat/long crs with WGS84 datum
+crsGeo = osr.SpatialReference()
+crsGeo.ImportFromEPSG(4326)  # 4326 is the EPSG id of lat/long crs
+transformer = osr.CoordinateTransformation(crs, crsGeo)
+
 def convert_pixel_latlong(points):
     point = points[0]
     x = point[0]
@@ -64,6 +72,7 @@ def convert_pixel_latlong(points):
     x *= cell_width
     y *= cell_width
 
+    transformer.
     
 
 if __name__ == "__main__":    
