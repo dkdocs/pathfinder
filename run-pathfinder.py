@@ -94,11 +94,13 @@ def point_to_latlong(point):
 
 def convert_pixel_latlong(points):
     
-    return (
+    return [
         point_to_latlong(points[0]),
         point_to_latlong(points[1])
-    )
+    ]
     
+def is_equal_point(point1, point2):
+    return point1[0] == point2[0] and point1[1] == point2[1]
 
 if __name__ == "__main__":    
     path_finder_results = seek(
@@ -113,10 +115,20 @@ if __name__ == "__main__":
 
     edges = path_finder_results['edges']
 
+    coordinates_for_line = convert_pixel_latlong(edges[0])
     # pp.pprint(edges)
-    for edge in edges:
-        coordinate_for_line = convert_pixel_latlong(edge)
-        kml.newlinestring(name='Transmisssion Lines', description='', coords=coordinate_for_line)
+    line_count = 0
+    for i in range(1, len(edges)):
+        edge = edges[i]
+        if is_equal_point(edges[i-1][1], edges[i][0]):
+            coordinates_for_line.append(point_to_latlong(edges[i][1]))
+        else:
+            kml.newlinestring(name='Transmisssion Line %d' % line_count, description='', coords=coordinates_for_line)
+            line_count += 1
+            coordinates_for_line = convert_pixel_latlong(edge)
+    
+    kml.newlinestring(name='Transmisssion Line %d' % line_count, description='', coords=coordinates_for_line)
+
     pp.pprint(kml)
     kml.save('paths.kml', format=True)
     # Save paths pixels to png image
