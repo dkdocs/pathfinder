@@ -118,19 +118,24 @@ if __name__ == "__main__":
     coordinates_for_line = convert_pixel_latlong(edges[0])
     # pp.pprint(edges)
     line_count = 0
+    max_path_length = 0
     for i in range(1, len(edges)):
         edge = edges[i]
         if is_equal_point(edges[i-1][1], edges[i][0]):
             coordinates_for_line.append(point_to_latlong(edges[i][1]))
         else:
             kml.newlinestring(name='Transmisssion Line %d' % line_count, description='', coords=coordinates_for_line)
+            max_path_length = max(max_path_length, len(coordinates_for_line))
             line_count += 1
             coordinates_for_line = convert_pixel_latlong(edge)
     
     kml.newlinestring(name='Transmisssion Line %d' % line_count, description='', coords=coordinates_for_line)
+    max_path_length = max(max_path_length, len(coordinates_for_line))
 
-    pp.pprint(kml)
+    # pp.pprint(kml)
     kml.save('paths.kml', format=True)
+    pp.pprint('max_path_length: %d' % max_path_length)
+    pp.pprint('line_count: %d' % line_count)
     # Save paths pixels to png image
     # imsave('output.png', paths)
 
