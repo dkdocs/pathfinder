@@ -156,7 +156,7 @@ def seek(
 
     # The distance array shows the shortest weighted distance from
     # each point in the grid to the nearest origin point.
-    distance = np.ones((n_rows, n_cols)) * not_visited
+    distance = np.ones((n_rows + 1, n_cols + 1)) * not_visited
     origin_locations = np.where(origins != 0)
     distance[origin_locations] = 0.
 
@@ -238,7 +238,7 @@ def seek(
     rendering = 1. / (1. + distance / 10.)
     rendering[np.where(origins)] = 1.
     rendering[np.where(paths)] = .8
-    results = {'paths': paths, 'distance': distance, 'rendering': rendering, 'edges': edges}
+    results = {'paths': paths, 'distance': distance, 'rendering': rendering, 'edges': edges[1:]}
     return results
 
 
@@ -274,7 +274,7 @@ def render(
     return frame_counter
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def nb_trace_back(
     distance,
     n_new_locs,
@@ -285,7 +285,7 @@ def nb_trace_back(
     paths,
     target,
     weights,
-    edges: EdgeList,
+    edges,
 ):
     """
     Connect each found electrified target to the grid through
@@ -299,7 +299,8 @@ def nb_trace_back(
         path.append(current_location)
         
         (row_here, col_here) = current_location
-        edges.append((row_here, col_here))
+        if len(path) > 1:
+            edges.append(path[-2:])
         # Check each of the neighbors for the lowest distance to grid.
         neighbors = [
             ((row_here - 1, col_here), 1.),
@@ -353,7 +354,7 @@ def nb_trace_back(
     return n_new_locs
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def nb_loop(
     col_here,
     distance,
@@ -370,7 +371,7 @@ def nb_loop(
     row_here,
     targets,
     weights,
-    edges: EdgeList,
+    edges,
 ):
     """
     This is the meat of the computation.

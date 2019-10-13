@@ -9,6 +9,9 @@ from random import randint
 import ipdb
 from shapely.geometry import Point, LineString
 from skimage.io import imsave
+from simplekml import Kml
+
+kml = Kml()
 
 points = []
 
@@ -53,6 +56,16 @@ targets = np.asarray(targets)
 pp.pprint(targets)
 pp.pprint(origins)
 
+def convert_pixel_latlong(points):
+    point = points[0]
+    x = point[0]
+    y = point[1]
+
+    x *= cell_width
+    y *= cell_width
+
+    
+
 if __name__ == "__main__":    
     path_finder_results = seek(
         origins,
@@ -64,6 +77,10 @@ if __name__ == "__main__":
     )
     paths = path_finder_results['paths']
 
+    edges = path_finder_results['edges']
+
+    pp.pprint(edges)
+    kml.newlinestring(name='Transmisssion Lines', desciption='', coords=map(convert_pixel_latlong, edges))
     # Save paths pixels to png image
     # imsave('output.png', paths)
 
