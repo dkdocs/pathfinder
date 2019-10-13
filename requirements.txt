@@ -2,3 +2,5 @@ matplotlib
 numba
 numpy
 ipdb
+shapely
+scikit-image
