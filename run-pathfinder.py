@@ -13,7 +13,7 @@ from skimage.io import imsave
 points = []
 
 
-with open('/Users/manishsharma/Downloads/towers_combined.csv') as f:
+with open('towers_combined.csv') as f:
     reader = csv.DictReader(f)
     points = [(int(row['X_img']), int(row['Y_img'])) for row in reader]
 
@@ -64,4 +64,6 @@ if __name__ == "__main__":
     )
     paths = path_finder_results['paths']
 
+    # Save paths pixels to png image
+    # imsave('output.png', paths)
 

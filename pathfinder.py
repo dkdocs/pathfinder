@@ -22,9 +22,11 @@ import time
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from numba import autojit
+from numba import jit
 import numpy as np
+from typing import List, Tuple
 
+EdgeList = List[Tuple[int, int]]
 
 def seek(
     origins,
@@ -161,6 +163,9 @@ def seek(
     # The paths array shows each of the paths that are discovered
     # from targets to their nearest origin point.
     paths = np.zeros((n_rows, n_cols), dtype=np.int8)
+    # Keep track of edges being added to final paths matrix
+    edges = [(0, 0)]
+
     # It is implemented using a heap queue, so that the halo point
     # nearest to an origin is always the next one that gets evaluated.
     halo = []
@@ -219,6 +224,7 @@ def seek(
             row_here,
             targets,
             weights,
+            edges,
         )
         for i_loc in range(n_new_locs):
             loc = (int(new_locs[i_loc, 1]), int(new_locs[i_loc, 2]))
@@ -232,7 +238,7 @@ def seek(
     rendering = 1. / (1. + distance / 10.)
     rendering[np.where(origins)] = 1.
     rendering[np.where(paths)] = .8
-    results = {'paths': paths, 'distance': distance, 'rendering': rendering}
+    results = {'paths': paths, 'distance': distance, 'rendering': rendering, 'edges': edges}
     return results
 
 
@@ -268,7 +274,7 @@ def render(
     return frame_counter
 
 
-@autojit(nopython=True)
+@jit(nopython=True)
 def nb_trace_back(
     distance,
     n_new_locs,
@@ -279,6 +285,7 @@ def nb_trace_back(
     paths,
     target,
     weights,
+    edges: EdgeList,
 ):
     """
     Connect each found electrified target to the grid through
@@ -290,7 +297,9 @@ def nb_trace_back(
     current_location = target
     while distance_remaining > 0.:
         path.append(current_location)
+        
         (row_here, col_here) = current_location
+        edges.append((row_here, col_here))
         # Check each of the neighbors for the lowest distance to grid.
         neighbors = [
             ((row_here - 1, col_here), 1.),
@@ -344,7 +353,7 @@ def nb_trace_back(
     return n_new_locs
 
 
-@autojit(nopython=True)
+@jit(nopython=True)
 def nb_loop(
     col_here,
     distance,
@@ -361,6 +370,7 @@ def nb_loop(
     row_here,
     targets,
     weights,
+    edges: EdgeList,
 ):
     """
     This is the meat of the computation.
@@ -395,6 +405,7 @@ def nb_loop(
                     paths,
                     neighbor,
                     weights,
+                    edges,
                 )
                 targets[neighbor] = 0
                 n_targets_remaining -= 1
