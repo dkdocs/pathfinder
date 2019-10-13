@@ -2,7 +2,7 @@ import os
 import csv
 from osgeo import gdal, osr
 ​
-​
+
 class MapIntegration:
     def __init__(self):
         pass

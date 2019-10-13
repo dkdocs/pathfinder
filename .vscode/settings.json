@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/anaconda3/envs/fastai-cpu/bin/python",
+    "python.pythonPath": "/data/git/pathfinder/penv-global-p3.6/bin/python3.6",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true
 }

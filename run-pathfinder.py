@@ -21,11 +21,16 @@ with open('towers_combined.csv') as f:
     reader = csv.DictReader(f)
     points = [(int(row['X_img']), int(row['Y_img'])) for row in reader]
 
+with open('towers_combined.csv') as f:
+    reader = csv.DictReader(f)
+    coordinates = [(float(row['latitude']), float(row['longitude'])) for row in reader]
+
 pp = PrettyPrinter(indent=4, width= 250)
 
 # print(points)
 X = list(map(lambda point: point[0], points))
 Y = list(map(lambda point: point[1], points))
+
 
 # Top, Right, Botttom, Left
 boundaries = {
@@ -35,10 +40,22 @@ boundaries = {
     'left': min(X)
 }
 
+reference = (
+    min(map(lambda location: location[0], coordinates)),
+    min(map(lambda location: location[1], coordinates)),
+    max(map(lambda location: location[0], coordinates)),
+    max(map(lambda location: location[1], coordinates))
+)
+
 cell_width = 200 # In pixels
 
 n_rows = ceil((boundaries['bottom'] - boundaries['top']) / cell_width) + 1
 n_columns = ceil((boundaries['right'] - boundaries['left']) / cell_width) + 1
+
+scale = (
+    (reference[2] - reference[0]) / n_rows,
+    (reference[3] - reference[1]) / n_columns
+)
 
 grid = [[0] * int(n_columns) for i in range(int(n_rows))]
 targets = [[0] * int(n_columns) for i in range(int(n_rows))]
@@ -57,22 +74,30 @@ targets = np.asarray(targets)
 pp.pprint(targets)
 pp.pprint(origins)
 
-crs = osr.SpatialReference()
-crs.ImportFromWkt(ds.GetProjectionRef())
+gdalAccess = gdal
+# ds = gdal.Open()
+# crs = osr.SpatialReference()
+# crs.ImportFromWkt(ds.GetProjectionRef())
 # create lat/long crs with WGS84 datum
-crsGeo = osr.SpatialReference()
-crsGeo.ImportFromEPSG(4326)  # 4326 is the EPSG id of lat/long crs
-transformer = osr.CoordinateTransformation(crs, crsGeo)
+# crsGeo = osr.SpatialReference()
+# crsGeo.ImportFromEPSG(4326)  # 4326 is the EPSG id of lat/long crs
+# transformer = osr.CoordinateTransformation(crs, crsGeo)
+
+def point_to_latlong(point):
+    y = point[0]
+    x = point[1]
+
+    lt = reference[0] + (n_rows - y) * scale[0]
+    lg = reference[1] + x * scale[1]
+
+    return (lg, lt)
 
 def convert_pixel_latlong(points):
-    point = points[0]
-    x = point[0]
-    y = point[1]
-
-    x *= cell_width
-    y *= cell_width
-
-    transformer.
+    
+    return (
+        point_to_latlong(points[0]),
+        point_to_latlong(points[1])
+    )
     
 
 if __name__ == "__main__":    
@@ -88,8 +113,12 @@ if __name__ == "__main__":
 
     edges = path_finder_results['edges']
 
-    pp.pprint(edges)
-    kml.newlinestring(name='Transmisssion Lines', desciption='', coords=map(convert_pixel_latlong, edges))
+    # pp.pprint(edges)
+    for edge in edges:
+        coordinate_for_line = convert_pixel_latlong(edge)
+        kml.newlinestring(name='Transmisssion Lines', description='', coords=coordinate_for_line)
+    pp.pprint(kml)
+    kml.save('paths.kml', format=True)
     # Save paths pixels to png image
     # imsave('output.png', paths)
 
