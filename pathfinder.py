@@ -30,7 +30,7 @@ def seek(
     origins,
     targets=None,
     weights=None,
-    path_handling='link',
+    path_handlings='link',
     debug=False,
     film=False,
 ):
@@ -103,18 +103,19 @@ def seek(
         targets = np.zeros(origins.shape, dtype=np.int8)
     assert targets.shape == origins.shape
     assert targets.shape == weights.shape
-    path_handling = path_handling.lower()
-    assert path_handling in ['none', 'n', 'assimilate', 'a', 'link', 'l']
+    path_handlings = path_handlings.lower()
+    assert path_handlings in ['none', 'n', 'assimilate', 'a', 'link', 'l']
     n_rows, n_cols = origins.shape
-    if path_handling[0] == 'n':
+    path_handling = None
+    if path_handlings[0] == 'n':
         path_handling = 0
-    if path_handling[0] == 'a':
+    if path_handlings[0] == 'a':
         path_handling = 1
-    if path_handling[0] == 'l':
+    if path_handlings[0] == 'l':
         path_handling = 2
 
     iteration = 0
-    not_visited = 9999999999.
+    not_visited = 9999999
 
     if film:
         frame_rate = int(1e4)
@@ -160,10 +161,6 @@ def seek(
     # The paths array shows each of the paths that are discovered
     # from targets to their nearest origin point.
     paths = np.zeros((n_rows, n_cols), dtype=np.int8)
-
-    # The halo is the set of points under evaluation. They surround
-    # the origin points and expand outward, forming a growing halo
-    # around the set of origins that eventually enevlops targets.
     # It is implemented using a heap queue, so that the halo point
     # nearest to an origin is always the next one that gets evaluated.
     halo = []
