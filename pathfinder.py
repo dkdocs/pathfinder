@@ -28,13 +28,31 @@ from typing import List, Tuple
 
 EdgeList = List[Tuple[int, int]]
 
+all_paths = []
+
+def are_adjacent(point1, point2):
+    row_here, col_here = point1
+    neighbors = [
+        (row_here - 1, col_here),
+        (row_here + 1, col_here),
+        (row_here, col_here + 1),
+        (row_here, col_here - 1),
+        (row_here - 1, col_here - 1),
+        (row_here + 1, col_here - 1),
+        (row_here - 1, col_here + 1),
+        (row_here + 1, col_here + 1)
+    ]
+
+    return True if point2 in neighbors else False
+
 def seek(
     origins,
+    point_to_grid_map,
     targets=None,
     weights=None,
     path_handlings='link',
     debug=False,
-    film=False,
+    film=False
 ):
     """
     Find the shortest paths between *any* origin and *each* target.
@@ -164,7 +182,8 @@ def seek(
     # from targets to their nearest origin point.
     paths = np.zeros((n_rows, n_cols), dtype=np.int8)
     # Keep track of edges being added to final paths matrix
-    edges = [(0, 0)]
+    # edges = [(0, 0)]
+    edges = []
 
     # It is implemented using a heap queue, so that the halo point
     # nearest to an origin is always the next one that gets evaluated.
@@ -225,7 +244,21 @@ def seek(
             targets,
             weights,
             edges,
+            point_to_grid_map,
         )
+
+        # new_locations = [(int(new_locs[i_loc, 1]), int(new_locs[i_loc, 2])) for i_loc in range(n_new_locs)]
+
+        if len(all_paths) > 1:
+            for current_path in all_paths:
+                towers_path = [p for p in current_path if p in point_to_grid_map]
+                if len(towers_path) > 1:
+                    last_point = towers_path[0]
+
+                    for current_point in towers_path[1:]:
+                        edges.append((last_point, current_point))
+                        last_point = current_point
+
         for i_loc in range(n_new_locs):
             loc = (int(new_locs[i_loc, 1]), int(new_locs[i_loc, 2]))
             heapq.heappush(halo, (new_locs[i_loc, 0], loc))
@@ -286,6 +319,7 @@ def nb_trace_back(
     target,
     weights,
     edges,
+    point_to_grid_map,
 ):
     """
     Connect each found electrified target to the grid through
@@ -299,8 +333,8 @@ def nb_trace_back(
         path.append(current_location)
         
         (row_here, col_here) = current_location
-        if len(path) > 1:
-            edges.append(path[-2:])
+        # if len(path) > 1:
+        #     edges.append(path[-2:])
         # Check each of the neighbors for the lowest distance to grid.
         neighbors = [
             ((row_here - 1, col_here), 1.),
@@ -335,6 +369,38 @@ def nb_trace_back(
 
         distance_remaining = distance[best_neighbor]
         current_location = best_neighbor
+    # if len(path) > 1:
+    #     towers_path = [p for p in path if p in point_to_grid_map]
+    #     last_point = towers_path[0]
+    #     for current_point in towers_path[1:]:
+    #         edges.append((last_point, current_point))
+    #         last_point = current_point
+    # if len(path) > 0:
+    #     path_found = False
+    #     for i, current_path in enumerate(all_paths):
+    #         if current_path[-1] == path[0]:
+    #             all_paths[i] = current_path + path[1:]
+    #         elif are_adjacent(current_path[-1], path[0]):
+    #             all_paths[i] = current_path + path
+    #             path_found = True
+    #         elif current_path[0] == path[-1]:
+    #             all_paths[i] = path + current_path[1:]
+    #         elif are_adjacent(current_path[-1], path[0]):
+    #             all_paths[i] = path + current_path
+    #             path_found = True
+    #         elif current_path[0] == path[0]:
+    #             all_paths[i] = list(reversed(current_path[1:])) + path
+    #         elif are_adjacent(current_path[0], path[0]):
+    #             all_paths[i] = list(reversed(current_path)) + path
+    #             path_found = True
+    #         elif current_path[-1] == path[-1]:
+    #             all_paths[i] = path + list(reversed(current_path[0:-1]))
+    #         elif are_adjacent(current_path[-1], path[-1]):
+    #             all_paths[i] = path + list(reversed(current_path))
+    #             path_found = True
+        
+    #     if not path_found:
+    #         all_paths.append(path)
 
     # Add this new path.
     for i_loc, loc in enumerate(path):
@@ -372,6 +438,7 @@ def nb_loop(
     targets,
     weights,
     edges,
+    point_to_grid_map,
 ):
     """
     This is the meat of the computation.
@@ -407,6 +474,7 @@ def nb_loop(
                     neighbor,
                     weights,
                     edges,
+                    point_to_grid_map,
                 )
                 targets[neighbor] = 0
                 n_targets_remaining -= 1

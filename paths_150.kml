@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="1">
+        <Placemark id="3">
+            <name>Transmisssion Line 0</name>
+            <description/>
+            <LineString id="2">
+                <coordinates>-43.61689461785714,-22.7639044,0.0 -43.6175665755102,-22.767251672857142,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="5">
+            <name>Transmisssion Line 1</name>
+            <description/>
+            <LineString id="4">
+                <coordinates>-43.6175665755102,-22.767251672857142,0.0 -43.618238533163264,-22.767921127428572,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="7">
+            <name>Transmisssion Line 2</name>
+            <description/>
+            <LineString id="6">
+                <coordinates>-43.618238533163264,-22.767921127428572,0.0 -43.62227027908163,-22.76926003657143,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="9">
+            <name>Transmisssion Line 3</name>
+            <description/>
+            <LineString id="8">
+                <coordinates>-43.62227027908163,-22.76926003657143,0.0 -43.62227027908163,-22.769929491142857,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="11">
+            <name>Transmisssion Line 4</name>
+            <description/>
+            <LineString id="10">
+                <coordinates>-43.62227027908163,-22.769929491142857,0.0 -43.62697398265306,-22.770598945714287,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="13">
+            <name>Transmisssion Line 5</name>
+            <description/>
+            <LineString id="12">
+                <coordinates>-43.62697398265306,-22.770598945714287,0.0 -43.63033377091837,-22.771937854857143,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="15">
+            <name>Transmisssion Line 6</name>
+            <description/>
+            <LineString id="14">
+                <coordinates>-43.63033377091837,-22.771937854857143,0.0 -43.63100572857143,-22.771268400285717,0.0</coordinates>
+            </LineString>
+        </Placemark>
+        <Placemark id="17">
+            <name>Transmisssion Line 7</name>
+            <description/>
+            <LineString id="16">
+                <coordinates>-43.618238533163264,-22.767921127428572,0.0 -43.62227027908163,-22.769929491142857,0.0</coordinates>
+            </LineString>
+        </Placemark>
+    </Document>
+</kml>
