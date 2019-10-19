@@ -15,6 +15,7 @@ from sklearn.cluster import DBSCAN
 from geopy.distance import vincenty as distance
 import json
 import os
+import sys
 
 # distance.vincenty((-22.867461, -43.5026573), (-22.8668212, -43.4972522))
 # from osgeo import gdal, osr
@@ -31,6 +32,7 @@ with open('new_towers_combined.csv') as f:
 # Constants
 ZOOM_SCALE = 500000
 cell_width = 100 # In pixels
+iMaxStackSize = 8000
 
 points = [(int((float(row['longitude']) + 90) * ZOOM_SCALE), int((float(row['latitude']) + 90) * ZOOM_SCALE)) for row in rows]
 coordinates = [(float(row['latitude']), float(row['longitude'])) for row in rows]
@@ -240,11 +242,13 @@ if __name__ == "__main__":
     all_edges = []
 
     current_cell = find_path_pixel(paths)
+    current_stack_size = sys.getrecursionlimit()
+    sys.setrecursionlimit(iMaxStackSize)
     while not current_cell is None:
         max_level = graph_walker(current_cell, None, paths, all_edges)
         print('max_level', max_level)
         current_cell = find_path_pixel(paths)
-    
+    sys.setrecursionlimit(current_stack_size)
     # pp.pprint(all_edges)
     # for i in range(1, len(all_edges)):
     #     edge = all_edges[i]
