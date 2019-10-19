@@ -14,6 +14,7 @@ from functools import reduce
 from sklearn.cluster import DBSCAN
 from geopy.distance import vincenty as distance
 import json
+import os
 
 # distance.vincenty((-22.867461, -43.5026573), (-22.8668212, -43.4972522))
 # from osgeo import gdal, osr
@@ -29,7 +30,7 @@ with open('new_towers_combined.csv') as f:
 
 # Constants
 ZOOM_SCALE = 500000
-cell_width = 200 # In pixels
+cell_width = 100 # In pixels
 
 points = [(int((float(row['longitude']) + 90) * ZOOM_SCALE), int((float(row['latitude']) + 90) * ZOOM_SCALE)) for row in rows]
 coordinates = [(float(row['latitude']), float(row['longitude'])) for row in rows]
@@ -128,11 +129,11 @@ def point_to_latlong(point):
         coordinates_sum = list(map(float, \
             reduce(lambda x, y: (float(x[0]) + float(y[0]), float(x[1]) + float(y[1])), \
                 map(\
-                    lambda tower: (rows[tower]['longitude'], rows[tower]['latitude']), \
+                    lambda tower: (cluster[tower]['center'][1], cluster[tower]['center'][0]), \
                     point_to_grid_map[point]) \
             ) \
         ))
-        return (coordinates_sum[0] * 1.0 / num_towers, coordinates_sum[1] * 1.0 / num_towers)
+        return (coordinates_sum[1] * 1.0 / num_towers, coordinates_sum[0] * 1.0 / num_towers)
     else:
         y = point[0]
         x = point[1]
@@ -140,7 +141,7 @@ def point_to_latlong(point):
         lt = reference[0] + y * scale[0]
         lg = reference[1] + x * scale[1]
 
-        return (lg, lt)
+        return (lt, lg)
 
 def convert_pixel_latlong(points):
     return (
@@ -160,19 +161,52 @@ def find_path_pixel(path_matrix):
 def get_path_neighbors(cell, path_matrix):
     neighbors = []
     max_y, max_x = path_matrix.shape
-    for diff_x in [-1, 0, 1]:
-        for diff_y in [-1, 0, 1]:
+    X = [-1, 0, 1]
+    Y = [-1, 0, 1]
+    if cell[0] == 0:
+        Y = Y[1:]
+    if cell[0] == path_matrix.shape[0]-1:
+        Y = Y[:-1]
+    if cell[1] == 0:
+        X = X[1:]
+    if cell[1] == path_matrix.shape[1]-1:
+        X = X[:-1]
+
+    for diff_x in X:
+        for diff_y in Y:
             loc = (cell[0] + diff_y, cell[1] + diff_x)
-            if not (diff_x == 0 and diff_y == 0) and cell[1] + diff_x >= 0 and cell[0] + diff_y >= 0 \
-                and path_matrix[loc] == 1:
+            if not (diff_x == 0 and diff_y == 0) and path_matrix[loc] == 1:
                 neighbors.append(loc)
     return neighbors
 
+def save_edges_to_kml(edges):
+    line_count = 0
+    max_path_length = 0
+
+    coordinates_for_line = convert_pixel_latlong(all_edges[0])
+    for idx, edge in enumerate(edges):
+        coordinates_for_line = convert_pixel_latlong(edge)
+        coordinates_for_line = tuple(map(lambda row: (row[1], row[0]), coordinates_for_line))
+        kml.newlinestring(name='Transmisssion Line %d' % idx, description='', coords=coordinates_for_line)
+        max_path_length = max(max_path_length, len(coordinates_for_line))
+        line_count += 1
+        coordinates_for_line = convert_pixel_latlong(edge)
+    # kml.newlinestring(name='Transmisssion Line %d' % line_count, description='', coords=coordinates_for_line)
+    max_path_length = max(max_path_length, len(coordinates_for_line))
+
+    pp.pprint(kml)
+    paths_save_file_path = 'paths_v2_%d.kml' % cell_width
+    kml.save(paths_save_file_path, format=True)
+    pp.pprint('paths_save_file_path: %s' % os.path.realpath(paths_save_file_path))
+    pp.pprint('max_path_length: %d' % max_path_length)
+    pp.pprint('line_count: %d' % line_count)
+
+
 def graph_walker(current_cell, tower_to_connect, path_matrix, edges: list, level=0):
-    print('level=%d' % level)
-    if level > 2000:
-        print('level=%d' % level)
-        return level
+    # print('level=%d' % level)
+    # if level > 2000:
+    #     print('level=%d' % level)
+    #     return level
     if current_cell is None:
         return level
 
@@ -184,7 +218,7 @@ def graph_walker(current_cell, tower_to_connect, path_matrix, edges: list, level
         if neighbor in point_to_grid_map:
             edges.append((tower_to_connect, neighbor))
         next_to_connect = neighbor if neighbor in point_to_grid_map else tower_to_connect
-        graph_walker(neighbor, next_to_connect, path_matrix, edges, level + 1)
+        level = max(level, graph_walker(neighbor, next_to_connect, path_matrix, edges, level + 1))
 
     return level
 
@@ -211,10 +245,7 @@ if __name__ == "__main__":
         print('max_level', max_level)
         current_cell = find_path_pixel(paths)
     
-    coordinates_for_line = convert_pixel_latlong(all_edges[0])
-    pp.pprint(all_edges)
-    line_count = 0
-    max_path_length = 0
+    # pp.pprint(all_edges)
     # for i in range(1, len(all_edges)):
     #     edge = all_edges[i]
     #     if is_equal_point(all_edges[i-1][1], all_edges[i][0]):
@@ -224,21 +255,9 @@ if __name__ == "__main__":
     #         max_path_length = max(max_path_length, len(coordinates_for_line))
     #         line_count += 1
     #         coordinates_for_line = convert_pixel_latlong(edge)
-    for idx, edge in enumerate(all_edges):
-        coordinates_for_line = convert_pixel_latlong(edge)
-        kml.newlinestring(name='Transmisssion Line %d' % idx, description='', coords=coordinates_for_line)
-        max_path_length = max(max_path_length, len(coordinates_for_line))
-        line_count += 1
-        coordinates_for_line = convert_pixel_latlong(edge)
-    # kml.newlinestring(name='Transmisssion Line %d' % line_count, description='', coords=coordinates_for_line)
-    max_path_length = max(max_path_length, len(coordinates_for_line))
 
-    pp.pprint(kml)
-    paths_save_file_path = 'paths_v2_%d.kml' % cell_width
-    kml.save(paths_save_file_path, format=True)
-    pp.pprint('paths_save_file_path: %s' % paths_save_file_path)
-    pp.pprint('max_path_length: %d' % max_path_length)
-    pp.pprint('line_count: %d' % line_count)
+    save_edges_to_kml(all_edges)
+
     # Save paths pixels to png image
     imsave('output-after_v2.png', paths)
 

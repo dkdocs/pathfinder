@@ -22,7 +22,7 @@ import time
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from numba import autojit
+# from numba import autojit
 import numpy as np
 from typing import List, Tuple
 
@@ -303,7 +303,7 @@ def render(
     return frame_counter
 
 
-@autojit(nopython=True)
+# @autojit(nopython=True)
 def nb_trace_back(
     distance,
     n_new_locs,
@@ -413,7 +413,7 @@ def nb_trace_back(
     return n_new_locs
 
 
-@autojit(nopython=True)
+# @autojit(nopython=True)
 def nb_loop(
     col_here,
     distance,
