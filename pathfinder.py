@@ -22,7 +22,7 @@ import time
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from numba import jit
+from numba import autojit
 import numpy as np
 from typing import List, Tuple
 
@@ -47,7 +47,6 @@ def are_adjacent(point1, point2):
 
 def seek(
     origins,
-    point_to_grid_map,
     targets=None,
     weights=None,
     path_handlings='link',
@@ -183,7 +182,7 @@ def seek(
     paths = np.zeros((n_rows, n_cols), dtype=np.int8)
     # Keep track of edges being added to final paths matrix
     # edges = [(0, 0)]
-    edges = []
+    # edges = []
 
     # It is implemented using a heap queue, so that the halo point
     # nearest to an origin is always the next one that gets evaluated.
@@ -243,21 +242,18 @@ def seek(
             row_here,
             targets,
             weights,
-            edges,
-            point_to_grid_map,
         )
 
         # new_locations = [(int(new_locs[i_loc, 1]), int(new_locs[i_loc, 2])) for i_loc in range(n_new_locs)]
 
-        if len(all_paths) > 1:
-            for current_path in all_paths:
-                towers_path = [p for p in current_path if p in point_to_grid_map]
-                if len(towers_path) > 1:
-                    last_point = towers_path[0]
+        # if len(all_paths) > 1:
+        #     for current_path in all_paths:
+        #         if len(towers_path) > 1:
+        #             last_point = towers_path[0]
 
-                    for current_point in towers_path[1:]:
-                        edges.append((last_point, current_point))
-                        last_point = current_point
+        #             for current_point in towers_path[1:]:
+        #                 edges.append((last_point, current_point))
+        #                 last_point = current_point
 
         for i_loc in range(n_new_locs):
             loc = (int(new_locs[i_loc, 1]), int(new_locs[i_loc, 2]))
@@ -271,7 +267,7 @@ def seek(
     rendering = 1. / (1. + distance / 10.)
     rendering[np.where(origins)] = 1.
     rendering[np.where(paths)] = .8
-    results = {'paths': paths, 'distance': distance, 'rendering': rendering, 'edges': edges[1:]}
+    results = {'paths': paths, 'distance': distance, 'rendering': rendering}
     return results
 
 
@@ -307,7 +303,7 @@ def render(
     return frame_counter
 
 
-# @jit(nopython=True)
+@autojit(nopython=True)
 def nb_trace_back(
     distance,
     n_new_locs,
@@ -318,8 +314,6 @@ def nb_trace_back(
     paths,
     target,
     weights,
-    edges,
-    point_to_grid_map,
 ):
     """
     Connect each found electrified target to the grid through
@@ -370,7 +364,6 @@ def nb_trace_back(
         distance_remaining = distance[best_neighbor]
         current_location = best_neighbor
     # if len(path) > 1:
-    #     towers_path = [p for p in path if p in point_to_grid_map]
     #     last_point = towers_path[0]
     #     for current_point in towers_path[1:]:
     #         edges.append((last_point, current_point))
@@ -420,7 +413,7 @@ def nb_trace_back(
     return n_new_locs
 
 
-# @jit(nopython=True)
+@autojit(nopython=True)
 def nb_loop(
     col_here,
     distance,
@@ -437,8 +430,6 @@ def nb_loop(
     row_here,
     targets,
     weights,
-    edges,
-    point_to_grid_map,
 ):
     """
     This is the meat of the computation.
@@ -456,8 +447,10 @@ def nb_loop(
         ((row_here - 1, col_here + 1), 2.**.5),
         ((row_here + 1, col_here + 1), 2.**.5),
     ]
-
     for (neighbor, scale) in neighbors:
+        if not (neighbor[0] < weights.shape[0] and neighbor[1] < weights.shape[1]):
+            continue
+
         weight = scale * weights[neighbor]
         neighbor_distance = distance_here + weight
 
@@ -473,8 +466,6 @@ def nb_loop(
                     paths,
                     neighbor,
                     weights,
-                    edges,
-                    point_to_grid_map,
                 )
                 targets[neighbor] = 0
                 n_targets_remaining -= 1
