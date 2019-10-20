@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="28">
+        <Placemark id="56">
+            <name>Destination 0</name>
+            <description/>
+            <Point id="55">
+                <coordinates>-43.5020295,-22.895666600000002,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="58">
+            <name>Destination 1</name>
+            <description/>
+            <Point id="57">
+                <coordinates>-43.5015778,-22.8955712,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="60">
+            <name>Destination 2</name>
+            <description/>
+            <Point id="59">
+                <coordinates>-43.501307499999996,-22.895467,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="62">
+            <name>Destination 0</name>
+            <description/>
+            <Point id="61">
+                <coordinates>-43.503328,-22.892266600000003,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="64">
+            <name>Destination 1</name>
+            <description/>
+            <Point id="63">
+                <coordinates>-43.502896799999995,-22.8921288,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="66">
+            <name>Destination 2</name>
+            <description/>
+            <Point id="65">
+                <coordinates>-43.5025064,-22.892037199999997,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="68">
+            <name>reference line</name>
+            <description/>
+            <LineString id="67">
+                <coordinates>-43.50163826666667,-22.895568266666668,0.0 -43.5029104,-22.8921442,0.0</coordinates>
+            </LineString>
+        </Placemark>
+    </Document>
+</kml>
