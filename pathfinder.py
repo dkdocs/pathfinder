@@ -4,16 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import with_statement
 
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-"""
-
-"""
-The pathfinder algorithm.
-"""
-
 import heapq
 import os
 import sys

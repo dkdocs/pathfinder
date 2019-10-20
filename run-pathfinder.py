@@ -318,7 +318,7 @@ def main(args):
     parser = ArgumentParser(description='Process some integers.')
     parser.add_argument('-i', '--input_file', metavar='I', type=str,
                     # default='new_towers_combined.csv',
-                    default='/Users/manishsharma/Downloads/florida_poles.csv',
+                    default='florida_poles.csv',
                     help='Input csv file path')
     parser.add_argument('-z', '--zoom_scale', metavar='Z', type=int,
                     default=DEFAULT_ZOOM_SCALE,
